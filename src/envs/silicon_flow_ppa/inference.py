@@ -23,36 +23,52 @@ from envs.silicon_flow_ppa.models import (
 # System prompt
 # ---------------------------------------------------------------------------
 
-SYSTEM_PROMPT = """You are SiliconFlow-PPA, an expert hardware engineer specialising
-in chip physical design. Your task is to place logic blocks on a 2D chip die to
-minimise wirelength, maximise area efficiency, and avoid thermal hotspots.
+SYSTEM_PROMPT = """You are SiliconFlow-PPA, an expert chip physical design engineer.
 
-Die dimensions are normalised to [0, 1] × [0, 1].
+Place logic blocks on a 2D die (normalised 0-1 × 0-1) to minimise wirelength,
+maximise compactness, and prevent thermal hotspots.
 
-You will receive the current layout state as JSON. You must respond with ONLY a
-valid JSON object specifying your placement decision:
+CRITICAL RULES (violations waste steps and reduce reward):
+1. NEVER place a block where it overlaps an already placed block.
+   - Check: new_x + new_width must not overlap any placed block's x range
+   - Check: new_y + new_height must not overlap any placed block's y range
+2. Block must fit within die: x + width <= 1.0, y + height <= 1.0
+3. Place only blocks listed in "remaining_blocks".
 
-{
-  "block_id": "<id of the block to place>",
-  "x": <float, top-left x in [0, 1]>,
-  "y": <float, top-left y in [0, 1]>,
-  "rotation": <0 for no rotation, 1 for 90 degrees>
-}
+STRATEGY — think step by step:
+1. Pack blocks left-to-right along y=0 first for best area utilisation.
+2. Next block x = max(placed_block.x + placed_block.width) to avoid overlap.
+3. NEVER place cpu and gpu adjacent — they are both high power (thermal rule).
+4. Place connected blocks (high netlist weight) close together.
 
-Rules:
-1. Place only blocks listed in "remaining_blocks".
-2. The block must fit entirely within the die (x + width <= 1, y + height <= 1).
-3. The block must NOT overlap any already placed block.
-4. High-power blocks placed adjacent to each other create thermal hotspots — avoid this.
-5. Minimise the total Manhattan distance between connected blocks (see "netlist").
-6. Output ONLY the JSON object — no explanation, no markdown, no extra text.
+THERMAL RULE: cpu (5W) and gpu (8W) must have at least 0.1 unit gap between them.
+
+Respond with ONLY a JSON object — no explanation, no markdown:
+{"block_id": "<id>", "x": <float>, "y": <float>, "rotation": <0 or 1>}
 """
 
 
 def _build_user_prompt(obs: PPAObservation) -> str:
     """Serialise the current observation into a concise prompt for the LLM."""
+    
+    # Calculate next safe x position
+    next_x = 0.0
+    if obs.placed_blocks:
+        next_x = max(round(b.x + b.width, 3) for b in obs.placed_blocks)
+    
+    # List occupied regions clearly
+    occupied = [
+        f"{b.block_id}: x=[{round(b.x,3)} to {round(b.x+b.width,3)}], y=[{round(b.y,3)} to {round(b.y+b.height,3)}]"
+        for b in obs.placed_blocks
+    ]
+
     data = {
         "die": {"width": obs.die_width, "height": obs.die_height},
+        "placement_hint": {
+            "next_safe_x": next_x,
+            "advice": f"Place next block at x={next_x}, y=0.0 to avoid overlaps. Never reuse a failed position.",
+            "occupied_regions": occupied,
+        },
         "remaining_blocks": [
             {
                 "block_id": b.block_id,
@@ -157,7 +173,8 @@ class LLMAgent:
 
     def _call_openai(self, user_message: str) -> str:
         from openai import OpenAI
-        client = OpenAI(api_key=self.api_key)
+        base_url = os.environ.get("LLM_BASE_URL", None)
+        client = OpenAI(api_key=self.api_key, base_url=base_url) if base_url else OpenAI(api_key=self.api_key)
         resp = client.chat.completions.create(
             model=self.model,
             max_tokens=256,
@@ -231,30 +248,63 @@ def get_agent() -> LLMAgent:
     return _agent
 
 
-def llm_act(obs: PPAObservation) -> PPAAction:
+def llm_act(obs: PPAObservation, max_retries: int = 5) -> PPAAction:
     """
     Given a PPAObservation, call the LLM and return a parsed PPAAction.
-    Falls back to a random legal placement if the LLM output is unparseable.
+    Retries with failure feedback if the LLM returns an illegal position.
     """
     if not obs.remaining_blocks:
         return PPAAction(block_id="", x=0.0, y=0.0, rotation=0)
 
     agent       = get_agent()
     user_prompt = _build_user_prompt(obs)
-    raw_text    = agent.generate(user_prompt)
-    parsed      = _extract_json(raw_text)
+    
+    failed_positions = []
+    
+    for attempt in range(max_retries):
+        # Add failed position history to prompt
+        if failed_positions:
+            feedback = "\n\nPREVIOUS FAILED ATTEMPTS (do NOT repeat these):\n"
+            for fp in failed_positions:
+                feedback += f"  - block={fp['block_id']} x={fp['x']} y={fp['y']} ILLEGAL\n"
+            feedback += "Choose a DIFFERENT x,y position than all above.\n"
+            prompt = user_prompt + feedback
+        else:
+            prompt = user_prompt
 
-    if parsed and "block_id" in parsed:
-        action = PPAAction.from_dict(parsed)
-        action.metadata["raw_llm_output"] = raw_text
-        return action
+        raw_text = agent.generate(prompt)
+        parsed   = _extract_json(raw_text)
 
-    # Fallback: place first remaining block at (0, 0)
+        if parsed and "block_id" in parsed:
+            action = PPAAction.from_dict(parsed)
+            action.metadata["raw_llm_output"] = raw_text
+            action.metadata["attempt"] = attempt + 1
+            
+            # Quick bounds check before returning
+            block = next((b for b in obs.remaining_blocks if b.block_id == parsed["block_id"]), None)
+            if block:
+                x, y = parsed.get("x", 0), parsed.get("y", 0)
+                if x + block.width <= 1.0 + 1e-6 and y + block.height <= 1.0 + 1e-6:
+                    return action
+                else:
+                    # Out of bounds — add to failed and retry
+                    failed_positions.append({"block_id": parsed["block_id"], "x": round(x,3), "y": round(y,3)})
+                    continue
+            return action
+
+        failed_positions.append({"block_id": "unknown", "x": -1, "y": -1})
+
+    # All retries exhausted — use dummy fallback
     fallback_block = obs.remaining_blocks[0]
+    dummy_response = agent._dummy_response(user_prompt)
+    dummy_parsed   = _extract_json(dummy_response)
+    if dummy_parsed:
+        return PPAAction.from_dict(dummy_parsed)
+    
     return PPAAction(
         block_id=fallback_block.block_id,
         x=0.0,
         y=0.0,
         rotation=0,
-        metadata={"fallback": True, "raw_llm_output": raw_text},
+        metadata={"fallback": True},
     )

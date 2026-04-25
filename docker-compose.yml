@@ -1,0 +1,16 @@
+services:
+  ppa-server:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    environment:
+      - PPA_SCENARIO=small_4block
+      - PPA_MAX_STEPS=50
+      - PPA_RANDOMISE=false
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 3

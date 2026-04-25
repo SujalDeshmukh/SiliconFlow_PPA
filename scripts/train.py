@@ -27,6 +27,7 @@ sys.path.insert(0, SRC)
 from envs.silicon_flow_ppa.server.environment import SiliconFlowPPAEnvironment
 from envs.silicon_flow_ppa.models import PPAAction, PPAObservation
 from envs.silicon_flow_ppa.inference import llm_act
+from envs.silicon_flow_ppa.inference import _extract_json, _build_user_prompt
 
 
 # ---------------------------------------------------------------------------
@@ -69,6 +70,52 @@ class EpisodeMetrics:
 
 
 # ---------------------------------------------------------------------------
+# Greedy fallback placement
+# ---------------------------------------------------------------------------
+
+def _greedy_place(obs: PPAObservation) -> PPAAction:
+    """Always finds a valid placement using left-to-right, top-to-bottom scan."""
+    import json as _j
+    prompt_data = _j.loads(_build_user_prompt(obs))
+    remaining = prompt_data.get("remaining_blocks", [])
+    placed    = prompt_data.get("placed_blocks", [])
+
+    if not remaining:
+        return PPAAction(block_id="", x=0.0, y=0.0, rotation=0)
+
+    block = remaining[0]
+    bw = block["width"]
+    bh = block["height"]
+    occupied = [
+        (b["x"], b["y"], b["x"] + b["width"], b["y"] + b["height"])
+        for b in placed
+    ]
+
+    step = 0.05
+    x, y = 0.0, 0.0
+    found = False
+    while y + bh <= 1.0 + 1e-6:
+        while x + bw <= 1.0 + 1e-6:
+            ok = all(
+                x + bw <= ox0 or ox1 <= x or y + bh <= oy0 or oy1 <= y
+                for ox0, oy0, ox1, oy1 in occupied
+            )
+            if ok:
+                found = True
+                break
+            x = round(x + step, 4)
+        if found:
+            break
+        x = 0.0
+        y = round(y + step, 4)
+
+    if not found:
+        x, y = 0.0, 0.0
+
+    return PPAAction(block_id=block["block_id"], x=x, y=y, rotation=0)
+
+
+# ---------------------------------------------------------------------------
 # Single episode runner
 # ---------------------------------------------------------------------------
 
@@ -86,8 +133,14 @@ def run_episode(
         print(f"Blocks to place: {[b.block_id for b in obs.remaining_blocks]}")
         print(f"{'='*60}")
 
+    last_was_illegal = False
+
     while not obs.done:
-        action = llm_act(obs)
+        # If last step was illegal, skip LLM and use greedy fallback immediately
+        if last_was_illegal:
+            action = _greedy_place(obs)
+        else:
+            action = llm_act(obs)
 
         if verbose:
             print(f"  Step {metrics.steps+1:02d} | Place '{action.block_id}' "
@@ -95,6 +148,8 @@ def run_episode(
 
         obs = env.step(action)
         metrics.update(obs)
+
+        last_was_illegal = not obs.is_legal
 
         if verbose:
             legal_str = "✓" if obs.is_legal else "✗ ILLEGAL"
