@@ -35,11 +35,15 @@ SCENARIO    = os.environ.get("PPA_SCENARIO",    "small_4block")
 MAX_STEPS   = int(os.environ.get("PPA_MAX_STEPS", "50"))
 RANDOMISE   = os.environ.get("PPA_RANDOMISE",   "false").lower() == "true"
 
+# For custom endpoints that need env instance
 env = SiliconFlowPPAEnvironment(
     scenario=SCENARIO,
     max_steps=MAX_STEPS,
     randomise_scenario=RANDOMISE,
 )
+
+# For OpenEnv standard endpoints
+app = create_fastapi_app(SiliconFlowPPAEnvironment, PPAAction, PPAObservation)
 
 # Build base FastAPI app from the factory (provides /reset, /step, /state, /health)
 from envs.silicon_flow_ppa.models import PPAAction, PPAObservation
