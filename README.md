@@ -1,3 +1,11 @@
+---
+title: SiliconFlow-PPA
+emoji: 🔬
+colorFrom: blue
+colorTo: purple
+sdk: docker
+pinned: false
+---
 # SiliconFlow-PPA
 
 **OpenEnv RL Environment for Chip Physical Design Optimisation**
