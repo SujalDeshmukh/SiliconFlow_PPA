@@ -1,14 +1,12 @@
 """
 SiliconFlow-PPA: FastAPI Server
-
 Wraps SiliconFlowPPAEnvironment in a REST API following the OpenEnv spec.
-
 Endpoints:
-  POST /reset         → start new episode
-  POST /step          → place one block
-  GET  /state         → episode metadata
-  GET  /health        → liveness probe
-  GET  /render        → ASCII visualisation of current layout
+  POST /reset         -> start new episode
+  POST /step          -> place one block
+  GET  /state         -> episode metadata
+  GET  /health        -> liveness probe
+  GET  /render        -> ASCII visualisation of current layout
 """
 import os
 import sys
@@ -19,44 +17,38 @@ SRC  = os.path.abspath(os.path.join(HERE, "../../../.."))
 if SRC not in sys.path:
     sys.path.insert(0, SRC)
 
-from fastapi import FastAPI, HTTPException
+from fastapi import HTTPException
 from fastapi.responses import PlainTextResponse
-
 from openenv.core import create_fastapi_app
 
+from envs.silicon_flow_ppa.models import PPAAction, PPAObservation
 from envs.silicon_flow_ppa.server.environment import SiliconFlowPPAEnvironment
 from envs.silicon_flow_ppa.server.renderer import render_ascii
 
 # ---------------------------------------------------------------------------
 # Initialise environment from environment variables (for Docker config)
 # ---------------------------------------------------------------------------
+SCENARIO  = os.environ.get("PPA_SCENARIO",    "small_4block")
+MAX_STEPS = int(os.environ.get("PPA_MAX_STEPS", "50"))
+RANDOMISE = os.environ.get("PPA_RANDOMISE",   "false").lower() == "true"
 
-SCENARIO    = os.environ.get("PPA_SCENARIO",    "small_4block")
-MAX_STEPS   = int(os.environ.get("PPA_MAX_STEPS", "50"))
-RANDOMISE   = os.environ.get("PPA_RANDOMISE",   "false").lower() == "true"
-
-# For custom endpoints that need env instance
+# Instance used for custom /render and /scenario endpoints
 env = SiliconFlowPPAEnvironment(
     scenario=SCENARIO,
     max_steps=MAX_STEPS,
     randomise_scenario=RANDOMISE,
 )
 
-# For OpenEnv standard endpoints
+# Build base FastAPI app using official OpenEnv factory
 app = create_fastapi_app(SiliconFlowPPAEnvironment, PPAAction, PPAObservation)
-
-# Build base FastAPI app from the factory (provides /reset, /step, /state, /health)
-from envs.silicon_flow_ppa.models import PPAAction, PPAObservation
-app = create_fastapi_app(env, PPAAction, PPAObservation)
 app.title = "SiliconFlow-PPA Environment"
 app.description = (
     "OpenEnv-compatible RL environment for chip physical design optimisation. "
     "The agent places logic blocks on a 2D die, scored on Area, Wirelength, and Thermal metrics."
 )
 
-
 # ---------------------------------------------------------------------------
-# Extra endpoint: ASCII layout render
+# Root endpoint
 # ---------------------------------------------------------------------------
 @app.get("/")
 def root():
@@ -65,6 +57,10 @@ def root():
         "description": "Chip Physical Design RL Environment",
         "endpoints": ["/health", "/reset", "/step", "/render", "/state", "/scenario"]
     }
+
+# ---------------------------------------------------------------------------
+# Extra endpoint: ASCII layout render
+# ---------------------------------------------------------------------------
 @app.get("/render", response_class=PlainTextResponse)
 def render():
     """Return a human-readable ASCII art view of the current chip layout."""
@@ -73,11 +69,9 @@ def render():
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-
 # ---------------------------------------------------------------------------
 # Extra endpoint: scenario info
 # ---------------------------------------------------------------------------
-
 @app.get("/scenario")
 def scenario_info():
     return {
