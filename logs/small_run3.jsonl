@@ -1,0 +1,5 @@
+{"episode": 1, "steps": 5, "total_reward": 22.2567, "illegal": 1, "wirelength": 2.8, "area_utilisation": 0.715, "thermal_max": 0.8889, "congestion_max": 1.3, "timing_cost": 0.1959, "completed": true}
+{"episode": 2, "steps": 4, "total_reward": 25.521, "illegal": 0, "wirelength": 2.05, "area_utilisation": 0.73, "thermal_max": 0.8889, "congestion_max": 1.2, "timing_cost": 0.1301, "completed": true}
+{"episode": 3, "steps": 5, "total_reward": 24.4998, "illegal": 1, "wirelength": 2.165, "area_utilisation": 0.715, "thermal_max": 0.8889, "congestion_max": 1.2, "timing_cost": 0.1396, "completed": true}
+{"episode": 4, "steps": 4, "total_reward": 23.6708, "illegal": 0, "wirelength": 3.0375, "area_utilisation": 0.7, "thermal_max": 0.8889, "congestion_max": 1.3, "timing_cost": 0.2164, "completed": true}
+{"episode": 5, "steps": 4, "total_reward": 23.7922, "illegal": 0, "wirelength": 2.3, "area_utilisation": 0.73, "thermal_max": 0.8889, "congestion_max": 1.3, "timing_cost": 0.1514, "completed": true}
