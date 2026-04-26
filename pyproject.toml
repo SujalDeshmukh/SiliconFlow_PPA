@@ -1,0 +1,43 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.backends.legacy:build"
+
+[project]
+name = "silicon-flow-ppa"
+version = "0.1.0"
+description = "OpenEnv-compatible RL environment for chip physical design optimization"
+authors = [
+    {name = "Sujal Deshmukh"}
+]
+license = {text = "MIT"}
+readme = "README.md"
+requires-python = ">=3.10"
+keywords = ["reinforcement-learning", "chip-design", "openenv", "llm", "rl-environment"]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+]
+dependencies = [
+    "fastapi>=0.100.0",
+    "uvicorn>=0.23.0",
+    "openenv-core>=0.1.0",
+    "anthropic>=0.20.0",
+    "openai>=1.0.0",
+    "numpy>=1.24.0",
+    "pydantic>=2.0.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.0.0",
+    "matplotlib>=3.7.0",
+]
+
+[project.urls]
+Homepage = "https://github.com/SujalDeshmukh/SiliconFlow_PPA"
+Space = "https://huggingface.co/spaces/Sujal12334/Silicon_Flow-PPA"
+
+[tool.setuptools.packages.find]
+where = ["src"]

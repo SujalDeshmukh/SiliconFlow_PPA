@@ -1,0 +1,72 @@
+name: SiliconFlow-PPA
+version: 0.1.0
+description: >
+  An OpenEnv-compatible reinforcement learning environment for chip physical
+  placement and routing optimization. An LLM agent places logic blocks on a
+  2D chip die to minimize wirelength, maximize area utilization, and prevent
+  thermal hotspots.
+
+author: Sujal Deshmukh
+license: MIT
+
+environment:
+  type: http
+  base_url: https://sujal12334-silicon-flow-ppa.hf.space
+  endpoints:
+    reset: POST /reset
+    step: POST /step
+    state: GET /state
+    health: GET /health
+    render: GET /render
+
+action:
+  type: json
+  schema:
+    block_id: string
+    x: float
+    y: float
+    rotation: integer
+
+observation:
+  type: json
+  fields:
+    - done
+    - reward
+    - remaining_blocks
+    - placed_blocks
+    - netlist
+    - current_wirelength
+    - current_area_util
+    - current_thermal_max
+    - is_legal
+
+reward:
+  components:
+    - name: placement_legality
+      description: Penalizes overlapping or out-of-bounds placements
+    - name: wirelength
+      description: Rewards minimizing total Manhattan wirelength
+    - name: area_efficiency
+      description: Rewards compact block packing
+    - name: thermal
+      description: Penalizes thermal hotspots from adjacent high-power blocks
+    - name: completion
+      description: Bonus reward for completing all block placements
+
+scenarios:
+  - name: small_4block
+    description: 4 blocks - CPU, GPU, Memory, IO
+    blocks: 4
+  - name: medium_6block
+    description: 6 blocks - dual CPU, GPU, Cache, PCIe, DDR
+    blocks: 6
+  - name: hard_8block
+    description: 8 blocks - mobile SoC style layout
+    blocks: 8
+
+tags:
+  - chip-design
+  - physical-placement
+  - rl-environment
+  - openenv
+  - hardware
