@@ -55,7 +55,13 @@ app.description = (
 # ---------------------------------------------------------------------------
 # Extra endpoint: ASCII layout render
 # ---------------------------------------------------------------------------
-
+@app.get("/")
+def root():
+    return {
+        "name": "SiliconFlow-PPA",
+        "description": "Chip Physical Design RL Environment",
+        "endpoints": ["/health", "/reset", "/step", "/render", "/state", "/scenario"]
+    }
 @app.get("/render", response_class=PlainTextResponse)
 def render():
     """Return a human-readable ASCII art view of the current chip layout."""
