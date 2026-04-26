@@ -11,7 +11,10 @@ import random
 import uuid
 from typing import Any, Dict, List, Optional
 
-from core.env_server import Environment, Action
+try:
+    from openenv.core import Environment, Action
+except ImportError:
+    from core.env_server import Environment, Action
 from envs.silicon_flow_ppa.models import (
     LogicBlock, NetConnection, PlacedBlock,
     PPAAction, PPAObservation, PPAState,
