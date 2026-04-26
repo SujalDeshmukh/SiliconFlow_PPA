@@ -1,0 +1,9 @@
+plots/
+logs/
+notebooks/
+*.png
+*.jpg
+*.jsonl
+*.ipynb
+setenv.bat
+test_openenv.py
