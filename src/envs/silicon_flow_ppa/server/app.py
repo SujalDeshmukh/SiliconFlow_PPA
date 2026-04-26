@@ -42,7 +42,8 @@ env = SiliconFlowPPAEnvironment(
 )
 
 # Build base FastAPI app from the factory (provides /reset, /step, /state, /health)
-app = create_fastapi_app(env)
+from envs.silicon_flow_ppa.models import PPAAction, PPAObservation
+app = create_fastapi_app(env, PPAAction, PPAObservation)
 app.title = "SiliconFlow-PPA Environment"
 app.description = (
     "OpenEnv-compatible RL environment for chip physical design optimisation. "
