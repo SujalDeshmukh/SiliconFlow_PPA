@@ -1,0 +1,56 @@
+{
+  "design_name": "gcd",
+  "workspace": ".",
+  "outputs_dir": "artifacts/eda_runs",
+  "timeout_sec": 3600,
+  "stages": [
+    {
+      "name": "floorplan",
+      "command": [
+        "openroad",
+        "-exit",
+        "scripts/openroad/floorplan.tcl"
+      ],
+      "report_globs": [
+        "reports/floorplan/*.rpt",
+        "reports/floorplan/*.log"
+      ]
+    },
+    {
+      "name": "global_place",
+      "command": [
+        "openroad",
+        "-exit",
+        "scripts/openroad/global_place.tcl"
+      ],
+      "report_globs": [
+        "reports/place/*.rpt",
+        "reports/place/*.log"
+      ]
+    },
+    {
+      "name": "global_route",
+      "command": [
+        "openroad",
+        "-exit",
+        "scripts/openroad/global_route.tcl"
+      ],
+      "report_globs": [
+        "reports/route/*.rpt",
+        "reports/route/*.log"
+      ]
+    },
+    {
+      "name": "sta",
+      "command": [
+        "openroad",
+        "-exit",
+        "scripts/openroad/sta.tcl"
+      ],
+      "report_globs": [
+        "reports/sta/*.rpt",
+        "reports/sta/*.log"
+      ]
+    }
+  ]
+}

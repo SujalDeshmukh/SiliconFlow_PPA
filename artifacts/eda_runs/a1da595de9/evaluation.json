@@ -1,0 +1,86 @@
+{
+  "run_id": "a1da595de9",
+  "design_name": "siliconflow_demo",
+  "toolchain": "openroad",
+  "started_at_utc": "2026-04-26T05:10:48.171737+00:00",
+  "finished_at_utc": "2026-04-26T05:10:52.350769+00:00",
+  "metrics": {
+    "area_um2": 10000.0,
+    "total_power_mw": 14.3,
+    "leakage_power_mw": null,
+    "dynamic_power_mw": null,
+    "wns_ns": -0.08,
+    "tns_ns": -0.91,
+    "congestion_overflow": 0.12,
+    "drc_violations": 5
+  },
+  "stage_results": [
+    {
+      "stage_name": "floorplan",
+      "success": true,
+      "return_code": 0,
+      "command": "docker run --rm -v C:\\Users\\sujal\\SiliconFlow_PPA:/work -w /work openroad/orfs /bin/bash -lc openroad eda/openroad/siliconflow_demo/floorplan.tcl || /OpenROAD-flow-scripts/tools/install/OpenROAD/bin/openroad eda/openroad/siliconflow_demo/floorplan.tcl",
+      "elapsed_sec": 0.9757,
+      "log_file": "C:\\Users\\sujal\\SiliconFlow_PPA\\artifacts\\eda_runs\\logs\\floorplan.log",
+      "report_files": [
+        "C:\\Users\\sujal\\SiliconFlow_PPA\\eda\\openroad\\siliconflow_demo\\reports\\floorplan\\floorplan.log",
+        "C:\\Users\\sujal\\SiliconFlow_PPA\\eda\\openroad\\siliconflow_demo\\reports\\floorplan\\floorplan_metrics.rpt"
+      ],
+      "errors": []
+    },
+    {
+      "stage_name": "global_place",
+      "success": true,
+      "return_code": 0,
+      "command": "docker run --rm -v C:\\Users\\sujal\\SiliconFlow_PPA:/work -w /work openroad/orfs /bin/bash -lc openroad eda/openroad/siliconflow_demo/global_place.tcl || /OpenROAD-flow-scripts/tools/install/OpenROAD/bin/openroad eda/openroad/siliconflow_demo/global_place.tcl",
+      "elapsed_sec": 0.9412,
+      "log_file": "C:\\Users\\sujal\\SiliconFlow_PPA\\artifacts\\eda_runs\\logs\\global_place.log",
+      "report_files": [
+        "C:\\Users\\sujal\\SiliconFlow_PPA\\eda\\openroad\\siliconflow_demo\\reports\\place\\global_place.log",
+        "C:\\Users\\sujal\\SiliconFlow_PPA\\eda\\openroad\\siliconflow_demo\\reports\\place\\place_metrics.rpt"
+      ],
+      "errors": []
+    },
+    {
+      "stage_name": "global_route",
+      "success": true,
+      "return_code": 0,
+      "command": "docker run --rm -v C:\\Users\\sujal\\SiliconFlow_PPA:/work -w /work openroad/orfs /bin/bash -lc openroad eda/openroad/siliconflow_demo/global_route.tcl || /OpenROAD-flow-scripts/tools/install/OpenROAD/bin/openroad eda/openroad/siliconflow_demo/global_route.tcl",
+      "elapsed_sec": 1.384,
+      "log_file": "C:\\Users\\sujal\\SiliconFlow_PPA\\artifacts\\eda_runs\\logs\\global_route.log",
+      "report_files": [
+        "C:\\Users\\sujal\\SiliconFlow_PPA\\eda\\openroad\\siliconflow_demo\\reports\\route\\global_route.log",
+        "C:\\Users\\sujal\\SiliconFlow_PPA\\eda\\openroad\\siliconflow_demo\\reports\\route\\route_metrics.rpt"
+      ],
+      "errors": []
+    },
+    {
+      "stage_name": "sta",
+      "success": true,
+      "return_code": 0,
+      "command": "docker run --rm -v C:\\Users\\sujal\\SiliconFlow_PPA:/work -w /work openroad/orfs /bin/bash -lc openroad eda/openroad/siliconflow_demo/sta.tcl || /OpenROAD-flow-scripts/tools/install/OpenROAD/bin/openroad eda/openroad/siliconflow_demo/sta.tcl",
+      "elapsed_sec": 0.8686,
+      "log_file": "C:\\Users\\sujal\\SiliconFlow_PPA\\artifacts\\eda_runs\\logs\\sta.log",
+      "report_files": [
+        "C:\\Users\\sujal\\SiliconFlow_PPA\\eda\\openroad\\siliconflow_demo\\reports\\sta\\sta.log",
+        "C:\\Users\\sujal\\SiliconFlow_PPA\\eda\\openroad\\siliconflow_demo\\reports\\sta\\sta_metrics.rpt"
+      ],
+      "errors": []
+    }
+  ],
+  "reports_parsed": [
+    "C:\\Users\\sujal\\SiliconFlow_PPA\\eda\\openroad\\siliconflow_demo\\reports\\floorplan\\floorplan.log",
+    "C:\\Users\\sujal\\SiliconFlow_PPA\\eda\\openroad\\siliconflow_demo\\reports\\floorplan\\floorplan_metrics.rpt",
+    "C:\\Users\\sujal\\SiliconFlow_PPA\\artifacts\\eda_runs\\logs\\floorplan.log",
+    "C:\\Users\\sujal\\SiliconFlow_PPA\\eda\\openroad\\siliconflow_demo\\reports\\place\\global_place.log",
+    "C:\\Users\\sujal\\SiliconFlow_PPA\\eda\\openroad\\siliconflow_demo\\reports\\place\\place_metrics.rpt",
+    "C:\\Users\\sujal\\SiliconFlow_PPA\\artifacts\\eda_runs\\logs\\global_place.log",
+    "C:\\Users\\sujal\\SiliconFlow_PPA\\eda\\openroad\\siliconflow_demo\\reports\\route\\global_route.log",
+    "C:\\Users\\sujal\\SiliconFlow_PPA\\eda\\openroad\\siliconflow_demo\\reports\\route\\route_metrics.rpt",
+    "C:\\Users\\sujal\\SiliconFlow_PPA\\artifacts\\eda_runs\\logs\\global_route.log",
+    "C:\\Users\\sujal\\SiliconFlow_PPA\\eda\\openroad\\siliconflow_demo\\reports\\sta\\sta.log",
+    "C:\\Users\\sujal\\SiliconFlow_PPA\\eda\\openroad\\siliconflow_demo\\reports\\sta\\sta_metrics.rpt",
+    "C:\\Users\\sujal\\SiliconFlow_PPA\\artifacts\\eda_runs\\logs\\sta.log"
+  ],
+  "metadata": {}
+}

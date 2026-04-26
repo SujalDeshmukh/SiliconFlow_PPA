@@ -1,0 +1,35 @@
+{
+  "run_id": "a7cdb30a89",
+  "design_name": "gcd",
+  "toolchain": "openroad",
+  "started_at_utc": "2026-04-26T04:34:40.559833+00:00",
+  "finished_at_utc": "2026-04-26T04:34:40.563273+00:00",
+  "metrics": {
+    "area_um2": null,
+    "total_power_mw": null,
+    "leakage_power_mw": null,
+    "dynamic_power_mw": null,
+    "wns_ns": null,
+    "tns_ns": null,
+    "congestion_overflow": null,
+    "drc_violations": null
+  },
+  "stage_results": [
+    {
+      "stage_name": "floorplan",
+      "success": false,
+      "return_code": -2,
+      "command": "openroad -exit scripts/openroad/floorplan.tcl",
+      "elapsed_sec": 0.0025,
+      "log_file": "C:\\Users\\sujal\\SiliconFlow_PPA\\artifacts\\eda_runs\\logs\\floorplan.log",
+      "report_files": [],
+      "errors": [
+        "Executable not found for stage 'floorplan': openroad"
+      ]
+    }
+  ],
+  "reports_parsed": [
+    "C:\\Users\\sujal\\SiliconFlow_PPA\\artifacts\\eda_runs\\logs\\floorplan.log"
+  ],
+  "metadata": {}
+}

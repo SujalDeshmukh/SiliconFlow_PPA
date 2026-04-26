@@ -1,0 +1,33 @@
+{
+  "run_id": "70b7ae8918",
+  "design_name": "siliconflow_demo",
+  "toolchain": "openroad",
+  "started_at_utc": "2026-04-26T05:08:02.133063+00:00",
+  "finished_at_utc": "2026-04-26T05:08:03.317478+00:00",
+  "metrics": {
+    "area_um2": null,
+    "total_power_mw": null,
+    "leakage_power_mw": null,
+    "dynamic_power_mw": null,
+    "wns_ns": null,
+    "tns_ns": null,
+    "congestion_overflow": null,
+    "drc_violations": null
+  },
+  "stage_results": [
+    {
+      "stage_name": "floorplan",
+      "success": false,
+      "return_code": 127,
+      "command": "docker run --rm -v C:\\Users\\sujal\\SiliconFlow_PPA:/work -w /work openroad/orfs openroad eda/openroad/siliconflow_demo/floorplan.tcl",
+      "elapsed_sec": 0.9005,
+      "log_file": "C:\\Users\\sujal\\SiliconFlow_PPA\\artifacts\\eda_runs\\logs\\floorplan.log",
+      "report_files": [],
+      "errors": []
+    }
+  ],
+  "reports_parsed": [
+    "C:\\Users\\sujal\\SiliconFlow_PPA\\artifacts\\eda_runs\\logs\\floorplan.log"
+  ],
+  "metadata": {}
+}

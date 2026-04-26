@@ -1,0 +1,44 @@
+{
+  "run_id": "d668e9251e",
+  "design_name": "sanity_block",
+  "toolchain": "openroad",
+  "started_at_utc": "2026-04-26T04:32:59.150906+00:00",
+  "finished_at_utc": "2026-04-26T04:32:59.251523+00:00",
+  "metrics": {
+    "area_um2": 10345.2,
+    "total_power_mw": 12.8,
+    "leakage_power_mw": null,
+    "dynamic_power_mw": null,
+    "wns_ns": -0.12,
+    "tns_ns": -1.54,
+    "congestion_overflow": 0.08,
+    "drc_violations": 3
+  },
+  "stage_results": [
+    {
+      "stage_name": "mock_floorplan",
+      "success": true,
+      "return_code": 0,
+      "command": "python -c print('WNS -0.12\\nTNS -1.54\\nTotal Power 12.8\\nArea 10345.2')",
+      "elapsed_sec": 0.0553,
+      "log_file": "C:\\Users\\sujal\\SiliconFlow_PPA\\artifacts\\eda_runs\\logs\\mock_floorplan.log",
+      "report_files": [],
+      "errors": []
+    },
+    {
+      "stage_name": "mock_route",
+      "success": true,
+      "return_code": 0,
+      "command": "python -c print('Overflow 0.08\\nDRC violations 3')",
+      "elapsed_sec": 0.0427,
+      "log_file": "C:\\Users\\sujal\\SiliconFlow_PPA\\artifacts\\eda_runs\\logs\\mock_route.log",
+      "report_files": [],
+      "errors": []
+    }
+  ],
+  "reports_parsed": [
+    "C:\\Users\\sujal\\SiliconFlow_PPA\\artifacts\\eda_runs\\logs\\mock_floorplan.log",
+    "C:\\Users\\sujal\\SiliconFlow_PPA\\artifacts\\eda_runs\\logs\\mock_route.log"
+  ],
+  "metadata": {}
+}

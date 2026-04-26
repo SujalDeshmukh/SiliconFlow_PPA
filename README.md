@@ -206,3 +206,53 @@ Set environment variables before training:
 | `LLM_MODEL` | e.g. `claude-sonnet-4-20250514` | Model name |
 | `ANTHROPIC_API_KEY` | `sk-ant-...` | Anthropic key |
 | `OPENAI_API_KEY` | `sk-...` | OpenAI key |
+
+---
+
+## Real EDA Starter (Phase 1 + 2)
+
+This repository now includes starter interfaces for real tool-driven evaluation:
+
+- `src/eda_flow/models.py`: canonical metric schema (`EDAMetrics`) + scoring
+- `src/eda_flow/parsers/openroad_reports.py`: OpenROAD text/report parser
+- `src/eda_flow/adapters/openroad_runner.py`: stage runner with logs + artifacts
+- `src/eda_flow/orchestrator.py`: run orchestration + result persistence
+- `scripts/run_eda_eval.py`: CLI entrypoint for end-to-end flow evaluation
+
+Run the starter pipeline:
+
+```bash
+python scripts/run_eda_eval.py --design-name my_block
+```
+
+With custom stages:
+
+```bash
+python scripts/run_eda_eval.py \
+  --design-name my_block \
+  --stage "floorplan::openroad -exit scripts/floorplan.tcl::reports/floorplan/*.rpt,reports/floorplan/*.log" \
+  --stage "route::openroad -exit scripts/route.tcl::reports/route/*.rpt,reports/route/*.log"
+```
+
+Or run from a reusable stage config:
+
+```bash
+python scripts/run_eda_eval.py --stage-config configs/openroad_stages.example.json
+```
+
+Generated outputs are saved under `artifacts/eda_runs/<run_id>/` as:
+
+- `evaluation.json` (all parsed metrics + per-stage results)
+- `score.json` (unified objective score breakdown)
+
+To connect a real OpenROAD flow:
+
+- Copy `configs/openroad_stages.example.json` to your own config (for your design).
+- Point each stage `command` to your actual `.tcl` flow scripts.
+- Ensure stage scripts emit reports under the matching `report_globs`.
+- Run with `--stage-config` and inspect `evaluation.json` + `score.json`.
+
+Ready-to-edit template provided:
+
+- `configs/openroad_stages.my_design.json`
+- `EDA_SETUP.md` (step-by-step first real run guide)

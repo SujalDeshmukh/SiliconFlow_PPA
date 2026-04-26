@@ -159,7 +159,7 @@ def run_episode(
         last_was_illegal = not obs.is_legal
 
         if verbose:
-            legal_str = "✓" if obs.is_legal else "✗ ILLEGAL"
+            legal_str = "OK" if obs.is_legal else "ILLEGAL"
             print(f"         reward={obs.reward:.3f}  {legal_str}  "
                   f"wl={obs.current_wirelength:.3f}  "
                   f"area={obs.current_area_util:.3f}  "
@@ -195,7 +195,7 @@ def train(
     )
 
     all_metrics: List[EpisodeMetrics] = []
-    print(f"\n🚀  SiliconFlow-PPA Training")
+    print("\n[START] SiliconFlow-PPA Training")
     print(f"    Scenario  : {scenario}")
     print(f"    Episodes  : {num_episodes}")
     print(f"    Max steps : {max_steps}")
@@ -208,7 +208,7 @@ def train(
         all_metrics.append(metrics)
 
         if not verbose:
-            status = "✓" if metrics.completed else "✗"
+            status = "OK" if metrics.completed else "NO"
             print(f"  Ep {ep:03d}/{num_episodes}  {status}  "
                   f"reward={metrics.total_reward:6.3f}  "
                   f"steps={metrics.steps:2d}  "

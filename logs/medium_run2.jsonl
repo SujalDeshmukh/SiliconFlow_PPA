@@ -1,5 +1,5 @@
-{"episode": 1, "steps": 6, "total_reward": 25.0093, "illegal": 0, "wirelength": 4.3, "area_utilisation": 0.685, "thermal_max": 1.12, "completed": true}
-{"episode": 2, "steps": 7, "total_reward": 20.6079, "illegal": 1, "wirelength": 3.525, "area_utilisation": 0.6, "thermal_max": 1.12, "completed": true}
-{"episode": 3, "steps": 6, "total_reward": 24.9417, "illegal": 0, "wirelength": 4.575, "area_utilisation": 0.6, "thermal_max": 1.12, "completed": true}
-{"episode": 4, "steps": 7, "total_reward": 23.3217, "illegal": 1, "wirelength": 6.15, "area_utilisation": 0.73, "thermal_max": 1.12, "completed": true}
-{"episode": 5, "steps": 6, "total_reward": 24.2343, "illegal": 0, "wirelength": 6.175, "area_utilisation": 0.235, "thermal_max": 1.12, "completed": true}
+{"episode": 1, "steps": 6, "total_reward": 29.52, "illegal": 0, "wirelength": 8.175, "area_utilisation": 0.45, "thermal_max": 1.12, "congestion_max": 1.1429, "timing_cost": 0.2948, "completed": true}
+{"episode": 2, "steps": 6, "total_reward": 30.8688, "illegal": 0, "wirelength": 4.6625, "area_utilisation": 0.625, "thermal_max": 1.12, "congestion_max": 1.1429, "timing_cost": 0.1463, "completed": true}
+{"episode": 3, "steps": 7, "total_reward": 28.7008, "illegal": 1, "wirelength": 3.975, "area_utilisation": 0.75, "thermal_max": 1.12, "congestion_max": 1.2381, "timing_cost": 0.1178, "completed": true}
+{"episode": 4, "steps": 6, "total_reward": 28.345, "illegal": 0, "wirelength": 7.15, "area_utilisation": 0.145, "thermal_max": 1.12, "congestion_max": 1.1429, "timing_cost": 0.2617, "completed": true}
+{"episode": 5, "steps": 7, "total_reward": 28.3189, "illegal": 1, "wirelength": 4.175, "area_utilisation": 0.7, "thermal_max": 1.12, "congestion_max": 1.2381, "timing_cost": 0.1263, "completed": true}

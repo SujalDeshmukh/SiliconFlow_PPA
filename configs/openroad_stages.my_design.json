@@ -1,0 +1,56 @@
+{
+  "design_name": "siliconflow_demo",
+  "workspace": ".",
+  "outputs_dir": "artifacts/eda_runs",
+  "timeout_sec": 3600,
+  "stages": [
+    {
+      "name": "floorplan",
+      "command": [
+        "openroad",
+        "-exit",
+        "eda/openroad/siliconflow_demo/floorplan.tcl"
+      ],
+      "report_globs": [
+        "eda/openroad/siliconflow_demo/reports/floorplan/*.rpt",
+        "eda/openroad/siliconflow_demo/reports/floorplan/*.log"
+      ]
+    },
+    {
+      "name": "global_place",
+      "command": [
+        "openroad",
+        "-exit",
+        "eda/openroad/siliconflow_demo/global_place.tcl"
+      ],
+      "report_globs": [
+        "eda/openroad/siliconflow_demo/reports/place/*.rpt",
+        "eda/openroad/siliconflow_demo/reports/place/*.log"
+      ]
+    },
+    {
+      "name": "global_route",
+      "command": [
+        "openroad",
+        "-exit",
+        "eda/openroad/siliconflow_demo/global_route.tcl"
+      ],
+      "report_globs": [
+        "eda/openroad/siliconflow_demo/reports/route/*.rpt",
+        "eda/openroad/siliconflow_demo/reports/route/*.log"
+      ]
+    },
+    {
+      "name": "sta",
+      "command": [
+        "openroad",
+        "-exit",
+        "eda/openroad/siliconflow_demo/sta.tcl"
+      ],
+      "report_globs": [
+        "eda/openroad/siliconflow_demo/reports/sta/*.rpt",
+        "eda/openroad/siliconflow_demo/reports/sta/*.log"
+      ]
+    }
+  ]
+}
