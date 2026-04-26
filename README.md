@@ -270,7 +270,7 @@ Screenshot placeholders:
 ![SmolLM2 training in Google Colab](assets/smollm2_colab_training.png)
 ```
 
-This directly addresses the 20% criterion: observable evidence of learning progress.
+
 
 ---
 
