@@ -1,0 +1,55 @@
+{
+  "small_4block": {
+    "blocks": [
+      {"block_id": "cpu", "width": 0.25, "height": 0.25, "power_rating": 5.0, "label": "CPU Core"},
+      {"block_id": "gpu", "width": 0.30, "height": 0.30, "power_rating": 8.0, "label": "GPU Core"},
+      {"block_id": "mem", "width": 0.20, "height": 0.15, "power_rating": 2.0, "label": "Memory Controller"},
+      {"block_id": "io", "width": 0.15, "height": 0.15, "power_rating": 1.0, "label": "I/O Block"}
+    ],
+    "netlist": [
+      {"source_id": "cpu", "target_id": "mem", "weight": 2.0},
+      {"source_id": "cpu", "target_id": "gpu", "weight": 1.5},
+      {"source_id": "gpu", "target_id": "mem", "weight": 1.0},
+      {"source_id": "cpu", "target_id": "io", "weight": 0.5}
+    ]
+  },
+  "medium_6block": {
+    "blocks": [
+      {"block_id": "cpu0", "width": 0.20, "height": 0.20, "power_rating": 4.0, "label": "CPU Core 0"},
+      {"block_id": "cpu1", "width": 0.20, "height": 0.20, "power_rating": 4.0, "label": "CPU Core 1"},
+      {"block_id": "gpu", "width": 0.25, "height": 0.25, "power_rating": 7.0, "label": "GPU"},
+      {"block_id": "cache", "width": 0.15, "height": 0.10, "power_rating": 1.5, "label": "L3 Cache"},
+      {"block_id": "pcie", "width": 0.10, "height": 0.10, "power_rating": 0.5, "label": "PCIe Controller"},
+      {"block_id": "ddr", "width": 0.20, "height": 0.10, "power_rating": 2.0, "label": "DDR Interface"}
+    ],
+    "netlist": [
+      {"source_id": "cpu0", "target_id": "cache", "weight": 3.0},
+      {"source_id": "cpu1", "target_id": "cache", "weight": 3.0},
+      {"source_id": "cache", "target_id": "ddr", "weight": 2.0},
+      {"source_id": "cpu0", "target_id": "gpu", "weight": 1.0},
+      {"source_id": "gpu", "target_id": "pcie", "weight": 1.5}
+    ]
+  },
+  "hard_8block": {
+    "blocks": [
+      {"block_id": "a53_0", "width": 0.15, "height": 0.15, "power_rating": 2.0, "label": "A53 Core 0"},
+      {"block_id": "a53_1", "width": 0.15, "height": 0.15, "power_rating": 2.0, "label": "A53 Core 1"},
+      {"block_id": "a78", "width": 0.18, "height": 0.18, "power_rating": 5.0, "label": "A78 Big Core"},
+      {"block_id": "mali", "width": 0.20, "height": 0.20, "power_rating": 6.0, "label": "Mali GPU"},
+      {"block_id": "npu", "width": 0.12, "height": 0.12, "power_rating": 3.0, "label": "Neural Engine"},
+      {"block_id": "isp", "width": 0.10, "height": 0.10, "power_rating": 1.5, "label": "Image Signal Proc"},
+      {"block_id": "modem", "width": 0.15, "height": 0.12, "power_rating": 4.0, "label": "5G Modem"},
+      {"block_id": "pmu", "width": 0.10, "height": 0.08, "power_rating": 0.5, "label": "Power Mgmt Unit"}
+    ],
+    "netlist": [
+      {"source_id": "a53_0", "target_id": "a53_1", "weight": 1.0},
+      {"source_id": "a53_0", "target_id": "a78", "weight": 1.5},
+      {"source_id": "a78", "target_id": "mali", "weight": 2.0},
+      {"source_id": "a78", "target_id": "npu", "weight": 2.5},
+      {"source_id": "mali", "target_id": "isp", "weight": 1.0},
+      {"source_id": "modem", "target_id": "a53_0", "weight": 1.0},
+      {"source_id": "pmu", "target_id": "a78", "weight": 0.5},
+      {"source_id": "npu", "target_id": "isp", "weight": 1.5}
+    ]
+  }
+}

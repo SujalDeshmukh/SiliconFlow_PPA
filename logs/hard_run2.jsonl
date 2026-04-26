@@ -1,5 +1,0 @@
-{"episode": 1, "steps": 8, "total_reward": 31.2773, "illegal": 0, "wirelength": 5.28, "area_utilisation": 0.442, "thermal_max": 2.0185, "completed": true}
-{"episode": 2, "steps": 10, "total_reward": 23.6017, "illegal": 2, "wirelength": 4.7, "area_utilisation": 0.6314, "thermal_max": 1.8611, "completed": true}
-{"episode": 3, "steps": 12, "total_reward": 15.1741, "illegal": 4, "wirelength": 5.16, "area_utilisation": 0.5, "thermal_max": 2.2222, "completed": true}
-{"episode": 4, "steps": 13, "total_reward": 12.4913, "illegal": 5, "wirelength": 7.43, "area_utilisation": 0.1536, "thermal_max": 2.0833, "completed": true}
-{"episode": 5, "steps": 9, "total_reward": 31.7612, "illegal": 1, "wirelength": 3.84, "area_utilisation": 0.6314, "thermal_max": 2.0185, "completed": true}

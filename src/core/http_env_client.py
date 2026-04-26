@@ -4,6 +4,7 @@ OpenEnv Core: Generic HTTP client that communicates with an Environment server.
 from __future__ import annotations
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
+import os
 from typing import Any, Dict, Generic, Optional, TypeVar
 
 import requests
@@ -35,7 +36,8 @@ class HTTPEnvClient(ABC, Generic[ActionT, ObsT]):
     """
 
     def __init__(self, base_url: str = "http://localhost:8000", timeout: int = 30):
-        self.base_url = base_url.rstrip("/")
+        resolved_url = os.environ.get("PPA_SERVER_URL", base_url)
+        self.base_url = resolved_url.rstrip("/")
         self.timeout = timeout
 
     # ------------------------------------------------------------------

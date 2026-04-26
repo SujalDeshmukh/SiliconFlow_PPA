@@ -14,26 +14,58 @@ Metrics:
 """
 from __future__ import annotations
 import math
-from typing import List
+import os
+from typing import Any, Dict, List
 
 from envs.silicon_flow_ppa.models import (
-    LogicBlock, NetConnection, PlacedBlock, PPAObservation,
+    NetConnection, PlacedBlock, PPAObservation,
 )
+from envs.silicon_flow_ppa.config import load_json
 
 
 # ---------------------------------------------------------------------------
 # Weights (tunable)
 # ---------------------------------------------------------------------------
-WEIGHTS = {
-    "legality":      2.0,   # heavy penalty for illegal placement
-    "area":          1.0,
-    "wirelength":    1.0,
-    "thermal":       1.5,
-    "completion":    3.0,   # big bonus for finishing the layout
+DEFAULT_REWARD_CONFIG: Dict[str, Any] = {
+    "weights": {
+        "legality": 2.0,
+        "area": 1.0,
+        "wirelength": 1.0,
+        "thermal": 1.5,
+        "congestion": 0.8,
+        "timing": 0.8,
+        "completion": 3.0,
+    },
+    "thermal_threshold": 0.6,
+    "overlap_penalty": -5.0,
+    "thermal_grid_resolution": 10,
+    "congestion_grid_resolution": 12,
+    "timing_exponent": 1.3,
+    "bounds_epsilon": 1e-6,
 }
 
-THERMAL_THRESHOLD = 0.6    # max allowed normalised power density per cell
-OVERLAP_PENALTY   = -5.0   # applied per illegal placement
+
+def _load_reward_config() -> Dict[str, Any]:
+    configured_path = os.environ.get("PPA_REWARD_CONFIG")
+    try:
+        payload = load_json(configured_path, "configs/reward_config.json")
+    except Exception:
+        payload = {}
+    merged = dict(DEFAULT_REWARD_CONFIG)
+    merged.update(payload)
+    merged["weights"] = dict(DEFAULT_REWARD_CONFIG["weights"])
+    merged["weights"].update(payload.get("weights", {}))
+    return merged
+
+
+REWARD_CONFIG = _load_reward_config()
+WEIGHTS = REWARD_CONFIG["weights"]
+THERMAL_THRESHOLD = float(REWARD_CONFIG["thermal_threshold"])
+OVERLAP_PENALTY = float(REWARD_CONFIG["overlap_penalty"])
+THERMAL_GRID_RESOLUTION = int(REWARD_CONFIG["thermal_grid_resolution"])
+CONGESTION_GRID_RESOLUTION = int(REWARD_CONFIG["congestion_grid_resolution"])
+TIMING_EXPONENT = float(REWARD_CONFIG["timing_exponent"])
+BOUNDS_EPSILON = float(REWARD_CONFIG["bounds_epsilon"])
 
 
 # ---------------------------------------------------------------------------
@@ -54,8 +86,8 @@ def check_legality(
     if (
         new_block.x < 0
         or new_block.y < 0
-        or new_block.x + new_block.width  > die_width  + 1e-6
-        or new_block.y + new_block.height > die_height + 1e-6
+        or new_block.x + new_block.width  > die_width  + BOUNDS_EPSILON
+        or new_block.y + new_block.height > die_height + BOUNDS_EPSILON
     ):
         return False, OVERLAP_PENALTY
 
@@ -168,7 +200,7 @@ def thermal_reward(
     placed_blocks: List[PlacedBlock],
     die_width: float = 1.0,
     die_height: float = 1.0,
-    grid_resolution: int = 10,
+    grid_resolution: int = THERMAL_GRID_RESOLUTION,
 ) -> tuple[float, float]:
     """
     Discretise die into grid_resolution × grid_resolution cells.
@@ -214,6 +246,99 @@ def thermal_reward(
     return reward, max_density
 
 
+def congestion_reward(
+    placed_blocks: List[PlacedBlock],
+    netlist: List[NetConnection],
+    die_width: float = 1.0,
+    die_height: float = 1.0,
+    grid_resolution: int = CONGESTION_GRID_RESOLUTION,
+) -> tuple[float, float]:
+    """
+    Approximate routing demand by projecting each net onto a Manhattan path on a grid.
+    Returns (reward, max_demand), both normalized for stable RL signals.
+    """
+    if not placed_blocks or not netlist:
+        return 1.0, 0.0
+
+    centers = {
+        b.block_id: (b.x + b.width / 2, b.y + b.height / 2)
+        for b in placed_blocks
+    }
+    demand = [[0.0] * grid_resolution for _ in range(grid_resolution)]
+    total_weight = sum(max(conn.weight, 0.0) for conn in netlist) or 1.0
+
+    def clamp_index(value: float, max_value: float) -> int:
+        ratio = 0.0 if max_value <= 0 else value / max_value
+        idx = int(ratio * grid_resolution)
+        return max(0, min(grid_resolution - 1, idx))
+
+    for conn in netlist:
+        src = centers.get(conn.source_id)
+        dst = centers.get(conn.target_id)
+        if not src or not dst:
+            continue
+
+        x0 = clamp_index(src[0], die_width)
+        y0 = clamp_index(src[1], die_height)
+        x1 = clamp_index(dst[0], die_width)
+        y1 = clamp_index(dst[1], die_height)
+        weight = max(conn.weight, 0.0)
+
+        step = 1 if x1 >= x0 else -1
+        for col in range(x0, x1 + step, step):
+            demand[y0][col] += weight
+
+        step = 1 if y1 >= y0 else -1
+        for row in range(y0, y1 + step, step):
+            demand[row][x1] += weight
+
+    max_demand = max(max(row) for row in demand)
+    normalizer = max(total_weight, 1e-9)
+    normalized_max = max_demand / normalizer
+    reward = max(0.0, 1.0 - normalized_max)
+    return reward, normalized_max
+
+
+def timing_reward(
+    placed_blocks: List[PlacedBlock],
+    netlist: List[NetConnection],
+    die_width: float = 1.0,
+    die_height: float = 1.0,
+    exponent: float = TIMING_EXPONENT,
+) -> tuple[float, float]:
+    """
+    Proxy for timing closure risk using weighted Manhattan distance.
+    Higher weighted long nets imply worse critical-path pressure.
+    """
+    if not placed_blocks or not netlist:
+        return 1.0, 0.0
+
+    centers = {
+        b.block_id: (b.x + b.width / 2, b.y + b.height / 2)
+        for b in placed_blocks
+    }
+    denom = max(die_width + die_height, 1e-9)
+
+    weighted_cost = 0.0
+    total_weight = 0.0
+    for conn in netlist:
+        src = centers.get(conn.source_id)
+        dst = centers.get(conn.target_id)
+        if not src or not dst:
+            continue
+        distance = (abs(src[0] - dst[0]) + abs(src[1] - dst[1])) / denom
+        weight = max(conn.weight, 0.0)
+        weighted_cost += (distance ** exponent) * weight
+        total_weight += weight
+
+    if total_weight <= 0:
+        return 1.0, 0.0
+
+    normalized_cost = weighted_cost / total_weight
+    reward = max(0.0, 1.0 - normalized_cost)
+    return reward, normalized_cost
+
+
 # ---------------------------------------------------------------------------
 # Combined Reward
 # ---------------------------------------------------------------------------
@@ -240,6 +365,8 @@ def compute_step_reward(
 
     # R4
     therm_r, _ = thermal_reward(obs.placed_blocks, obs.die_width, obs.die_height)
+    congestion_r, _ = congestion_reward(obs.placed_blocks, obs.netlist, obs.die_width, obs.die_height)
+    timing_r, _ = timing_reward(obs.placed_blocks, obs.netlist, obs.die_width, obs.die_height)
 
     # Penalty from illegal placement
     penalty = obs.overlap_penalty
@@ -249,6 +376,8 @@ def compute_step_reward(
         + w["area"]       * area_r
         + w["wirelength"] * wire_r
         + w["thermal"]    * therm_r
+        + w.get("congestion", 0.0) * congestion_r
+        + w.get("timing", 0.0) * timing_r
         + penalty
     )
 

@@ -6,7 +6,7 @@ one at a time, receiving PPA (Power, Performance, Area) feedback.
 """
 from __future__ import annotations
 import copy
-import json
+import os
 import random
 import uuid
 from typing import Any, Dict, List, Optional
@@ -18,19 +18,22 @@ from envs.silicon_flow_ppa.models import (
     PPAAction, PPAObservation, PPAState,
 )
 from envs.silicon_flow_ppa.rewards import (
+    area_efficiency_reward,
     check_legality,
     compute_step_reward,
+    congestion_reward,
+    timing_reward,
     compute_total_wirelength,
     thermal_reward,
-    area_efficiency_reward,
 )
+from envs.silicon_flow_ppa.config import load_json
 
 
 # ---------------------------------------------------------------------------
 # Scenario catalogue — each scenario is a dict with blocks + netlist
 # ---------------------------------------------------------------------------
 
-SCENARIOS = {
+DEFAULT_SCENARIOS = {
     "small_4block": {
         "blocks": [
             {"block_id": "cpu",    "width": 0.25, "height": 0.25, "power_rating": 5.0, "label": "CPU Core"},
@@ -85,6 +88,18 @@ SCENARIOS = {
         ],
     },
 }
+
+
+def _load_scenarios() -> Dict[str, Dict[str, Any]]:
+    configured_path = os.environ.get("PPA_SCENARIOS_FILE")
+    try:
+        payload = load_json(configured_path, "configs/scenarios.json")
+        return payload if payload else DEFAULT_SCENARIOS
+    except Exception:
+        return DEFAULT_SCENARIOS
+
+
+SCENARIOS = _load_scenarios()
 
 
 class SiliconFlowPPAEnvironment(Environment):
@@ -237,6 +252,8 @@ class SiliconFlowPPAEnvironment(Environment):
         wl = compute_total_wirelength(self._placed_blocks, self._netlist)
         area_util = area_efficiency_reward(self._placed_blocks, self.die_width, self.die_height)
         _, therm_max = thermal_reward(self._placed_blocks, self.die_width, self.die_height)
+        _, congestion_max = congestion_reward(self._placed_blocks, self._netlist, self.die_width, self.die_height)
+        _, timing_cost = timing_reward(self._placed_blocks, self._netlist, self.die_width, self.die_height)
 
         obs = PPAObservation(
             die_width=self.die_width,
@@ -250,6 +267,8 @@ class SiliconFlowPPAEnvironment(Environment):
             current_wirelength=wl,
             current_area_util=area_util,
             current_thermal_max=therm_max,
+            current_congestion=congestion_max,
+            current_timing_cost=timing_cost,
             done=self._done,
             reward=step_reward,
         )

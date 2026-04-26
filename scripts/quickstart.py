@@ -15,7 +15,7 @@ HERE = os.path.dirname(__file__)
 SRC  = os.path.abspath(os.path.join(HERE, "../src"))
 sys.path.insert(0, SRC)
 
-os.environ["LLM_PROVIDER"] = "dummy"
+os.environ.setdefault("LLM_PROVIDER", "dummy")
 
 from envs.silicon_flow_ppa.server.environment import SiliconFlowPPAEnvironment
 from envs.silicon_flow_ppa.server.renderer import render_ascii
@@ -56,6 +56,8 @@ def main():
     print(f"  Final wirelength   : {obs.current_wirelength:.4f}")
     print(f"  Final area util    : {obs.current_area_util:.4f}")
     print(f"  Thermal max        : {obs.current_thermal_max:.4f}")
+    print(f"  Congestion max     : {obs.current_congestion:.4f}")
+    print(f"  Timing cost        : {obs.current_timing_cost:.4f}")
     print(f"{'='*60}\n")
 
 

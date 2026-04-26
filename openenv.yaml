@@ -11,7 +11,7 @@ license: MIT
 
 environment:
   type: http
-  base_url: https://sujal12334-silicon-flow-ppa.hf.space
+  base_url: ${OPENENV_BASE_URL:-http://localhost:8000}
   endpoints:
     reset: POST /reset
     step: POST /step
@@ -38,6 +38,8 @@ observation:
     - current_wirelength
     - current_area_util
     - current_thermal_max
+    - current_congestion
+    - current_timing_cost
     - is_legal
 
 reward:
@@ -50,6 +52,10 @@ reward:
       description: Rewards compact block packing
     - name: thermal
       description: Penalizes thermal hotspots from adjacent high-power blocks
+    - name: congestion
+      description: Penalizes routing demand concentration on the routing grid
+    - name: timing
+      description: Penalizes weighted long nets as a timing-closure proxy
     - name: completion
       description: Bonus reward for completing all block placements
 

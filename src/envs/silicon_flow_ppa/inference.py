@@ -38,10 +38,8 @@ CRITICAL RULES (violations waste steps and reduce reward):
 STRATEGY — think step by step:
 1. Pack blocks left-to-right along y=0 first for best area utilisation.
 2. Next block x = max(placed_block.x + placed_block.width) to avoid overlap.
-3. NEVER place cpu and gpu adjacent — they are both high power (thermal rule).
+3. Space high-power blocks to reduce thermal hotspots.
 4. Place connected blocks (high netlist weight) close together.
-
-THERMAL RULE: cpu (5W) and gpu (8W) must have at least 0.1 unit gap between them.
 
 Respond with ONLY a JSON object — no explanation, no markdown:
 {"block_id": "<id>", "x": <float>, "y": <float>, "rotation": <0 or 1>}
@@ -151,6 +149,8 @@ class LLMAgent:
         self.provider = os.environ.get("LLM_PROVIDER", "dummy").lower()
         self.model    = os.environ.get("LLM_MODEL", "claude-sonnet-4-20250514")
         self.api_key  = os.environ.get("LLM_API_KEY") or os.environ.get("ANTHROPIC_API_KEY") or os.environ.get("OPENAI_API_KEY")
+        self.scan_step = float(os.environ.get("PPA_SCAN_STEP", "0.05"))
+        self.bounds_epsilon = float(os.environ.get("PPA_BOUNDS_EPSILON", "1e-6"))
 
     def generate(self, user_message: str) -> str:
         if self.provider == "anthropic":
@@ -210,11 +210,11 @@ class LLMAgent:
         # Simple left-to-right, top-to-bottom packing
         occupied = [(b["x"], b["y"], b["x"] + b["width"], b["y"] + b["height"]) for b in placed]
 
-        step = 0.05
+        step = self.scan_step
         x, y = 0.0, 0.0
         placed_it = False
-        while y + bh <= 1.0 + 1e-6:
-            while x + bw <= 1.0 + 1e-6:
+        while y + bh <= 1.0 + self.bounds_epsilon:
+            while x + bw <= 1.0 + self.bounds_epsilon:
                 ok = all(
                     x + bw <= ox0 or ox1 <= x or y + bh <= oy0 or oy1 <= y
                     for ox0, oy0, ox1, oy1 in occupied
@@ -284,7 +284,7 @@ def llm_act(obs: PPAObservation, max_retries: int = 5) -> PPAAction:
             block = next((b for b in obs.remaining_blocks if b.block_id == parsed["block_id"]), None)
             if block:
                 x, y = parsed.get("x", 0), parsed.get("y", 0)
-                if x + block.width <= 1.0 + 1e-6 and y + block.height <= 1.0 + 1e-6:
+                if x + block.width <= 1.0 + agent.bounds_epsilon and y + block.height <= 1.0 + agent.bounds_epsilon:
                     return action
                 else:
                     # Out of bounds — add to failed and retry

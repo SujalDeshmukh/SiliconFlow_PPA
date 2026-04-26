@@ -43,6 +43,8 @@ class EpisodeMetrics:
         self.final_wirelength = 0.0
         self.final_area_util = 0.0
         self.final_thermal = 0.0
+        self.final_congestion = 0.0
+        self.final_timing_cost = 0.0
         self.completed = False    # all blocks placed within budget
 
     def update(self, obs: PPAObservation):
@@ -53,6 +55,8 @@ class EpisodeMetrics:
         self.final_wirelength = obs.current_wirelength
         self.final_area_util  = obs.current_area_util
         self.final_thermal    = obs.current_thermal_max
+        self.final_congestion = obs.current_congestion
+        self.final_timing_cost = obs.current_timing_cost
         if obs.done and len(obs.remaining_blocks) == 0:
             self.completed = True
 
@@ -65,6 +69,8 @@ class EpisodeMetrics:
             "wirelength":        round(self.final_wirelength, 4),
             "area_utilisation":  round(self.final_area_util, 4),
             "thermal_max":       round(self.final_thermal, 4),
+            "congestion_max":    round(self.final_congestion, 4),
+            "timing_cost":       round(self.final_timing_cost, 4),
             "completed":         self.completed,
         }
 
@@ -91,11 +97,12 @@ def _greedy_place(obs: PPAObservation) -> PPAAction:
         for b in placed
     ]
 
-    step = 0.05
+    step = float(os.environ.get("PPA_SCAN_STEP", "0.05"))
+    bounds_epsilon = float(os.environ.get("PPA_BOUNDS_EPSILON", "1e-6"))
     x, y = 0.0, 0.0
     found = False
-    while y + bh <= 1.0 + 1e-6:
-        while x + bw <= 1.0 + 1e-6:
+    while y + bh <= 1.0 + bounds_epsilon:
+        while x + bw <= 1.0 + bounds_epsilon:
             ok = all(
                 x + bw <= ox0 or ox1 <= x or y + bh <= oy0 or oy1 <= y
                 for ox0, oy0, ox1, oy1 in occupied
@@ -156,7 +163,9 @@ def run_episode(
             print(f"         reward={obs.reward:.3f}  {legal_str}  "
                   f"wl={obs.current_wirelength:.3f}  "
                   f"area={obs.current_area_util:.3f}  "
-                  f"therm={obs.current_thermal_max:.3f}")
+                  f"therm={obs.current_thermal_max:.3f}  "
+                  f"cong={obs.current_congestion:.3f}  "
+                  f"time={obs.current_timing_cost:.3f}")
 
     if verbose:
         print(f"\n  Episode done | total_reward={metrics.total_reward:.3f}  "

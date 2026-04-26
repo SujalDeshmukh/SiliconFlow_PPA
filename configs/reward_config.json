@@ -1,0 +1,17 @@
+{
+  "weights": {
+    "legality": 2.0,
+    "area": 1.0,
+    "wirelength": 1.0,
+    "thermal": 1.5,
+    "congestion": 0.8,
+    "timing": 0.8,
+    "completion": 3.0
+  },
+  "thermal_threshold": 0.6,
+  "overlap_penalty": -5.0,
+  "thermal_grid_resolution": 10,
+  "congestion_grid_resolution": 12,
+  "timing_exponent": 1.3,
+  "bounds_epsilon": 1e-06
+}

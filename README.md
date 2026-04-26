@@ -23,6 +23,8 @@ The agent receives a virtual chip die, a list of logic blocks (with sizes and po
 | **Area Efficiency** | Compactness of bounding box |
 | **Wirelength** | Total Manhattan distance of netlist connections |
 | **Thermal Density** | Power hotspot detection |
+| **Routing Congestion (proxy)** | Grid demand concentration |
+| **Timing Cost (proxy)** | Weighted long-net pressure |
 | **Legality** | No overlaps, no out-of-bounds placements |
 | **Completion** | Bonus for placing all blocks within budget |
 
@@ -171,9 +173,26 @@ R = 2.0 × legality
   + 1.0 × area_efficiency
   + 1.0 × wirelength
   + 1.5 × thermal
+  + 0.8 × congestion_proxy
+  + 0.8 × timing_proxy
   + overlap_penalty        (−5 per illegal step)
   + 3.0 × completion_bonus (only at episode end, if all blocks placed)
 ```
+
+---
+
+## Configuration (No Hardcoded Knobs)
+
+Runtime behavior is now configurable with files + env vars:
+
+- `configs/scenarios.json`: block catalogs and netlists
+- `configs/reward_config.json`: reward weights and metric constants
+- `PPA_SCENARIOS_FILE`: override scenario file path
+- `PPA_REWARD_CONFIG`: override reward config path
+- `PPA_SERVER_URL`: server endpoint for HTTP client
+- `PPA_SCAN_STEP`: greedy fallback scan step size
+- `PPA_BOUNDS_EPSILON`: numeric bounds tolerance
+- `OPENENV_BASE_URL`: endpoint used by `openenv.yaml`
 
 ---
 

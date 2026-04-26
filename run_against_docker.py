@@ -2,15 +2,14 @@ import sys
 import os
 sys.path.insert(0, 'src')
 
-os.environ['LLM_PROVIDER'] = 'openai'
-os.environ['LLM_MODEL'] = 'llama-3.1-8b-instant'
-os.environ['LLM_API_KEY'] = os.environ.get('LLM_API_KEY', '') # paste your actual gsk_... key
-os.environ['LLM_BASE_URL'] = 'https://api.groq.com/openai/v1/'
+os.environ.setdefault('LLM_PROVIDER', 'openai')
+os.environ.setdefault('LLM_MODEL', 'llama-3.1-8b-instant')
 
 from envs.silicon_flow_ppa.client import SiliconFlowPPAClient
 from envs.silicon_flow_ppa.inference import llm_act
 
-client = SiliconFlowPPAClient(base_url="http://localhost:8000")
+base_url = os.environ.get("PPA_SERVER_URL", "http://localhost:8000")
+client = SiliconFlowPPAClient(base_url=base_url)
 result = client.reset()
 
 while not result.done:

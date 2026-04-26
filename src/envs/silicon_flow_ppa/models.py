@@ -98,6 +98,8 @@ class PPAObservation(BaseModel):
     current_wirelength: float = 0.0
     current_area_util: float = 0.0
     current_thermal_max: float = 0.0
+    current_congestion: float = 0.0
+    current_timing_cost: float = 0.0
 
     # Standard OpenEnv fields
     done: bool = False
@@ -121,6 +123,8 @@ class PPAObservation(BaseModel):
             current_wirelength=d.get("current_wirelength", 0.0),
             current_area_util=d.get("current_area_util", 0.0),
             current_thermal_max=d.get("current_thermal_max", 0.0),
+            current_congestion=d.get("current_congestion", 0.0),
+            current_timing_cost=d.get("current_timing_cost", 0.0),
             done=d.get("done", False),
             reward=d.get("reward"),
             metadata=d.get("metadata", {}),
