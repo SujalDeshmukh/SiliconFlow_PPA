@@ -17,7 +17,7 @@ ENV PPA_SCENARIO=small_4block
 ENV PPA_MAX_STEPS=50
 ENV PPA_RANDOMISE=false
 
-EXPOSE 8000
+EXPOSE 7860
 
 # Run the FastAPI server
-CMD ["uvicorn", "envs.silicon_flow_ppa.server.app:app", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["uvicorn", "envs.silicon_flow_ppa.server.app:app", "--host", "0.0.0.0", "--port", "7860"]
