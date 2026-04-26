@@ -1,7 +1,9 @@
 plots/
+assets/
+*.png
+plots/
+*.png
 logs/
-.png
-.jpg
 notebooks/
 *.jsonl
 *.ipynb
