@@ -8,18 +8,20 @@
 
 ---
 
-## 01  Why This Matters — Chip Placement is a $100B Bottleneck
+## 01  Why We Chose This Problem
 
-Everything from your phone's processor to your graphics card, from your computer's CPU to the server-grade CPUs used in data centres have had their origins as a **floorplan**. Before any transistors are made at all, the decision needs to be made of where on the silicon wafer the macro blocks are to go. This task is known as **macro/block placement**.
+We chose chip floorplanning because it is both deeply practical and genuinely hard. Every phone, laptop, gaming GPU, and server chip starts with one early decision: where each major block (CPU, GPU, memory, IO, NPU, ISP, modem) should be placed on the die. That single decision influences performance, power, heat, and even whether the design can be routed at all.
 
-With today's heterogeneous SoCs, a single chip could include a CPU cluster, a GPU, an NPU, ISP, modem, and memory controller. Placing these blocks incorrectly will cause you:
+This is also a very human engineering problem. Senior chip designers do not solve placement in one shot - they iterate, test, backtrack, and balance trade-offs. That made it a great fit for reinforcement learning: the agent can learn step-by-step from feedback instead of trying to output a perfect final layout in one prompt.
+
+When placement goes wrong, the cost shows up immediately:
 
 - 🔥 **Thermal Hotspots** - Having high-power blocks clustered together will create thermal hotspots that will cause poor performance and shortened lifespan for the chip.
 - 📏 **Wasted Wirelength** - Placement problems may require longer wires, which means added capacitance, more latency, and wasted energy.
 - 🗺️ **Routing Issues** - Clustering blocks will lead to routing congestion, causing parts of the layout to fail DRC. This sends the entire layout back to square one.
 - ⏱️ **Missed Timing** - Critical paths spanning the layout will miss their timing targets, leading to costly spins.
 
-Conventional EDA tools are powerful but deterministic and extremely time-consuming to iterate. They lack the capacity to *reason about trade-offs* the way a seasoned human engineer does.
+Conventional EDA tools are powerful, but iteration is expensive and trade-off exploration is slow. Our goal is not to replace those tools; it is to build an intelligent co-pilot that can explore options quickly and improve with every episode.
 
 > **The core insight:** Placement is not a one-shot decision problem — it is a sequential, multi-objective, partially-observable Markov Decision Process. Framing it as RL is not just elegant; it's correct.
 
@@ -67,10 +69,21 @@ SiliconFlow-PPA is a modular stack with clean separation of concerns:
 
 ```
 silicon_flow_ppa/
+├── configs/
+│   ├── scenarios.json
+│   ├── reward_config.json
+│   └── openroad_stages.example.json
 ├── src/
 │   ├── core/
 │   │   ├── env_server.py          # Abstract base classes + FastAPI factory
 │   │   └── http_env_client.py     # Generic HTTP client base
+│   ├── eda_flow/
+│   │   ├── models.py              # EDA metrics schema + scoring helpers
+│   │   ├── orchestrator.py        # Stage execution orchestration
+│   │   ├── adapters/
+│   │   │   └── openroad_runner.py
+│   │   └── parsers/
+│   │       └── openroad_reports.py
 │   └── envs/
 │       └── silicon_flow_ppa/
 │           ├── models.py           # PPAAction, PPAObservation, PPAState
@@ -87,8 +100,13 @@ silicon_flow_ppa/
 ├── scripts/
 │   ├── quickstart.py               # No-Docker demo
 │   ├── train.py                    # RL training loop
-│   └── plot_metrics.py             # Reward/metrics visualisation
+│   ├── plot_metrics.py             # Reward/metrics visualisation
+│   └── run_eda_eval.py             # EDA evaluation entrypoint
+├── logs/                           # JSONL training runs
+├── plots/                          # Generated training figures
+├── notebooks/                      # Colab/local experiment notebooks
 ├── docker-compose.yml
+├── openenv.yaml
 └── requirements.txt
 ```
 
@@ -331,11 +349,6 @@ This project is beyond "training script exists." The full loop runs on the envir
 4. Compute reward and write JSONL logs (`--log-file`)
 5. Generate plots from committed logs (`scripts/plot_metrics.py`)
 
-### Submission-Time Evidence Status
-
-We are submitting verified end-to-end training evidence from committed runs (`logs/*.jsonl` + `plots/*.png`) to meet the deadline.
-A longer 50-episode baseline-vs-trained comparison on the same scenario is currently in progress and will be added as an extended benchmark update.
-
 ### Measured Results from Committed Logs
 
 The values below are computed from files in `logs/`:
@@ -355,6 +368,12 @@ The repo already contains readable `.png` outputs in `plots/`:
 - `plots/thermal_per_episode.png` - episode vs thermal max
 - `plots/illegal_per_episode.png` - episode vs illegal placements
 - `plots/summary.png` - run-level aggregate comparison
+
+![Reward per episode](plots/reward_per_episode.png)
+![Wirelength per episode](plots/wirelength_per_episode.png)
+![Thermal max per episode](plots/thermal_per_episode.png)
+![Illegal placements per episode](plots/illegal_per_episode.png)
+![Training summary across runs](plots/summary.png)
 
 ### During-Training Evidence (Qualitative)
 

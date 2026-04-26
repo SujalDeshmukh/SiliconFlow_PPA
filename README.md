@@ -34,10 +34,21 @@ The agent receives a virtual chip die, a list of logic blocks (with sizes and po
 
 ```
 silicon_flow_ppa/
+├── configs/
+│   ├── scenarios.json
+│   ├── reward_config.json
+│   └── openroad_stages.example.json
 ├── src/
 │   ├── core/
 │   │   ├── env_server.py          # Abstract base classes + FastAPI factory
 │   │   └── http_env_client.py     # Generic HTTP client base
+│   ├── eda_flow/
+│   │   ├── models.py              # EDA metrics schema + scoring helpers
+│   │   ├── orchestrator.py        # Stage execution orchestration
+│   │   ├── adapters/
+│   │   │   └── openroad_runner.py
+│   │   └── parsers/
+│   │       └── openroad_reports.py
 │   └── envs/
 │       └── silicon_flow_ppa/
 │           ├── models.py           # PPAAction, PPAObservation, PPAState
@@ -53,8 +64,13 @@ silicon_flow_ppa/
 │   └── test_ppa_env.py            # Pytest suite (unit + integration)
 ├── scripts/
 │   ├── quickstart.py              # No-Docker demo
-│   └── train.py                   # RL training loop
+│   ├── train.py                   # RL training loop
+│   ├── plot_metrics.py            # Reward/metrics visualization
+│   └── run_eda_eval.py            # EDA evaluation entrypoint
+├── logs/                          # JSONL training runs
+├── plots/                         # Generated training figures
 ├── docker-compose.yml
+├── openenv.yaml
 └── requirements.txt
 ```
 
