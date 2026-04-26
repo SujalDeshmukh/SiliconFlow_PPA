@@ -22,10 +22,8 @@ if SRC not in sys.path:
 from fastapi import FastAPI, HTTPException
 from fastapi.responses import PlainTextResponse
 
-try:
-    from openenv.core import create_fastapi_app
-except ImportError:
-    from core.env_server import create_fastapi_app
+from openenv.core import create_fastapi_app
+
 from envs.silicon_flow_ppa.server.environment import SiliconFlowPPAEnvironment
 from envs.silicon_flow_ppa.server.renderer import render_ascii
 
