@@ -1,8 +1,8 @@
 plots/
 logs/
+.png
+.jpg
 notebooks/
-*.png
-*.jpg
 *.jsonl
 *.ipynb
 setenv.bat
